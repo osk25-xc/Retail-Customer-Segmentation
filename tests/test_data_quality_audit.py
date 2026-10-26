@@ -62,7 +62,7 @@ class DataQualityAuditCliTests(unittest.TestCase):
         result = self.run_audit(pd.DataFrame([VALID_ROW, second_row]))
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertIn("Duplicate customer IDs", result.stdout)
-        self.assertIn("\\n2\\n", result.stdout)
+        self.assertRegex(result.stdout, r"Duplicate customer IDs ---\\s+2\\s+")
         self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
 
     def test_inconsistent_spend_is_reported(self):
