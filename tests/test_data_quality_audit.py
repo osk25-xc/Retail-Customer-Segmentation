@@ -50,10 +50,10 @@ class DataQualityAuditCliTests(unittest.TestCase):
         self.assertIn("age outside 18–100: 1", result.stdout)
         self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
 
-    def test_missing_required_column_is_reported(self):
+    def test_missing_required_column_returns_failure_code(self):
         row = {key: value for key, value in VALID_ROW.items() if key != "country"}
         result = self.run_audit(pd.DataFrame([row]))
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertEqual(result.returncode, 1, msg=result.stderr)
         self.assertIn("FAIL — missing required columns", result.stdout)
         self.assertIn("country", result.stdout)
 
