@@ -57,6 +57,24 @@ class DataQualityAuditCliTests(unittest.TestCase):
         self.assertIn("FAIL — missing required columns", result.stdout)
         self.assertIn("country", result.stdout)
 
+    def test_duplicate_customer_ids_are_reported(self):
+        second_row = dict(VALID_ROW, country="India")
+        result = self.run_audit(pd.DataFrame([VALID_ROW, second_row]))
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("Duplicate customer IDs", result.stdout)
+        self.assertIn("\\n2\\n", result.stdout)
+        self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
+
+    def test_inconsistent_spend_is_reported(self):
+        row = dict(VALID_ROW, total_purchases=250.0)
+        result = self.run_audit(pd.DataFrame([row]))
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn(
+            "total_purchases inconsistent with frequency × average_order_value: 1",
+            result.stdout,
+        )
+        self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
