@@ -44,8 +44,7 @@ class DataQualityAuditCliTests(unittest.TestCase):
         self.assertIn("PASS — no issues found by these checks", result.stdout)
 
     def test_invalid_age_is_reported(self):
-        row = dict(VALID_ROW, age=12)
-        result = self.run_audit(pd.DataFrame([row]))
+        result = self.run_audit(pd.DataFrame([dict(VALID_ROW, age=12)]))
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertIn("age outside 18–100: 1", result.stdout)
         self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
@@ -58,22 +57,46 @@ class DataQualityAuditCliTests(unittest.TestCase):
         self.assertIn("country", result.stdout)
 
     def test_duplicate_customer_ids_are_reported(self):
-        second_row = dict(VALID_ROW, country="India")
-        result = self.run_audit(pd.DataFrame([VALID_ROW, second_row]))
+        result = self.run_audit(pd.DataFrame([VALID_ROW, dict(VALID_ROW)]))
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertIn("Duplicate customer IDs", result.stdout)
         self.assertRegex(result.stdout, r"Duplicate customer IDs ---\s+2\s+")
         self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
 
     def test_inconsistent_spend_is_reported(self):
-        row = dict(VALID_ROW, total_purchases=250.0)
-        result = self.run_audit(pd.DataFrame([row]))
+        result = self.run_audit(
+            pd.DataFrame([dict(VALID_ROW, total_purchases=250.0)])
+        )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertIn(
             "total_purchases inconsistent with frequency × average_order_value: 1",
             result.stdout,
         )
         self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
+
+    def test_non_numeric_age_is_reported_without_crashing(self):
+        result = self.run_audit(pd.DataFrame([dict(VALID_ROW, age="unknown")]))
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("age: 1", result.stdout)
+        self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
+
+    def test_blank_customer_id_is_reported(self):
+        result = self.run_audit(pd.DataFrame([dict(VALID_ROW, customer_id="  ")]))
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("blank customer_id: 1", result.stdout)
+        self.assertIn("Overall status: REVIEW REQUIRED", result.stdout)
+
+    def test_missing_input_file_returns_clear_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing_path = Path(tmp) / "missing.csv"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "--input", str(missing_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("FAIL — input file not found", result.stderr)
 
 
 if __name__ == "__main__":
