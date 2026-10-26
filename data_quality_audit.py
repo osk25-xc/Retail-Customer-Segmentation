@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
 import pandas as pd
 
 REQUIRED_COLUMNS = {
@@ -50,7 +52,7 @@ def main() -> None:
     missing_columns = sorted(REQUIRED_COLUMNS - set(df.columns))
     if missing_columns:
         print(f"\nFAIL — missing required columns: {missing_columns}")
-        return
+        sys.exit(1)
 
     print("\n--- Missing values by column ---")
     missing = df[list(REQUIRED_COLUMNS)].isna().sum().sort_values(ascending=False)
