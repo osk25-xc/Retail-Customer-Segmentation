@@ -1,65 +1,55 @@
 # Retail Customer Segmentation | RFM Analysis
 
-A Python analytics project that uses Recency, Frequency, and Monetary (RFM) measures to explore customer purchasing behavior and support customer-retention analysis.
+A Python project for exploring customer purchasing behavior with Recency, Frequency, and Monetary (RFM) measures, supported by data-quality checks.
 
 ## Business objective
 
-Understand how recently and frequently customers purchase, compare customer value, and identify groups that may benefit from different retention strategies.
+Summarize customer purchase behavior and identify groups that may be useful for retention and engagement analysis.
 
 ## RFM framework
 
-- **Recency:** How recently a customer purchased.
-- **Frequency:** How often a customer purchased.
-- **Monetary:** How much a customer spent.
+- **Recency:** Days since the customer's latest purchase. Lower is more recent.
+- **Frequency:** Number of purchases in the defined observation window.
+- **Monetary:** Total customer spend in the same observation window.
 
-## Data quality audit
+Document the snapshot date, observation window, and scoring boundaries before interpreting segments.
 
-The command-line audit checks required columns, missing values, duplicate and blank customer IDs, invalid ranges, blank category/country values, non-numeric values in numeric fields, and consistency between purchase frequency, average order value, and total purchases.
+## Data-quality audit
 
-Run it from the repository root:
+The command-line audit checks required columns, missing values, duplicate or blank customer IDs, invalid ranges, blank category/country values, non-numeric values, and consistency between purchase-frequency and monetary fields.
+
+Run from the repository root:
 
 ```bash
 python data_quality_audit.py --input data/retail_customers.csv
 ```
 
-If you omit `--input`, the script looks for `data/retail_customers.csv`. The audit does not modify the input file. A clean dataset returns exit code `0`; data-quality findings are summarized for review; missing required columns return `1`; an unreadable or missing input file returns `2`.
+The audit does not modify the input file. Review flagged records against the dataset's business rules before treating them as errors.
 
-Business rules such as age limits and spend consistency should be confirmed with the data owner before flagged rows are treated as errors.
-
-## Run the automated tests
-
-Install dependencies and run the regression suite:
+## Tests
 
 ```bash
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
 
-GitHub Actions also runs the unittest suite for repository changes. Check the Actions tab for the latest run status.
+GitHub Actions is configured to run the unittest suite; check the Actions tab for the latest workflow result.
 
 ## Analysis workflow
 
-1. Inspect the dataset structure and validate data quality.
-2. Calculate RFM measures from the available customer or transaction data.
-3. Apply the project's RFM scoring or clustering approach.
-4. Compare segment sizes and monetary contribution.
-5. Visualize the results and formulate testable business recommendations.
-
-## Business questions
-
-- Which customers purchase recently and frequently?
-- Which segments contribute more monetary value?
-- Which customer groups may need re-engagement?
-- How could segment-level messaging differ?
+1. Inspect and validate the source data.
+2. Aggregate transaction data to one row per customer, if required.
+3. Calculate RFM metrics using a documented observation window.
+4. Apply the implemented scoring or segmentation method.
+5. Compare segment sizes and monetary contribution.
+6. Summarize findings with limitations and possible business experiments.
 
 ## Tools
 
 Python · Pandas · NumPy · Matplotlib · Seaborn · Scikit-learn · Jupyter Notebook · unittest · GitHub Actions
 
-## Skills demonstrated
+## Interpretation
 
-Data cleaning · Data quality validation · Feature engineering · RFM analysis · Customer segmentation · Visualization · Automated testing · Business recommendations
+RFM segments describe observed purchasing patterns; they do not explain customer motivation or prove that a particular campaign will work. Validate segment definitions before acting on them.
 
----
-
-Created by **Omkar S. Kshirsagar** | [GitHub Profile](https://github.com/osk25-xc)
+Maintained by [Omkar S. Kshirsagar](https://github.com/osk25-xc).
